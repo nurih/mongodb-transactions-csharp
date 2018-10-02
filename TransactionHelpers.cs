@@ -16,14 +16,15 @@ namespace Nuri.MongoDB.Transactions
                 }
                 catch (MongoException exception)
                 {
-                    // if transient error, retry the whole transaction
                     if (exception.HasErrorLabel("TransientTransactionError"))
                     {
                         Console.WriteLine("TransientTransactionError, retrying transaction.");
+                       // It's transient, trying again might succeed
                         continue;
                     }
                     else
                     {
+                        // non-transient failure: should not retry.
                         throw;
                     }
                 }

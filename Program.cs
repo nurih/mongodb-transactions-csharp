@@ -13,31 +13,23 @@ namespace Nuri.MongoDB.Transactions
 
 
             var toolShed = new ToolShed(db);
-            try
-            {
 
-                Attempt(() => toolShed.CheckOut(1, 3));
+            Attempt(() => toolShed.CheckOut(1, 3), "Lend un-held tool to a person");
 
-                Attempt(() => toolShed.CheckIn(1));
+            Attempt(() => toolShed.CheckIn(1), "Return tool held by someone");
 
-                Attempt(() => toolShed.CheckOut(2, 3));
+            Attempt(() => toolShed.CheckOut(2, 3), "Lend un-held tool to a person");
+ 
+            Attempt(() => toolShed.CheckOut(2, 3), "Lend same tool to same person");
 
-                Attempt(() => toolShed.CheckIn(3));
+            Attempt(() => toolShed.CheckOut(2, 1), "Lend same tool to someone else - should fail");
 
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Lending Tool Failed. ${e}");
-            }
-
+            Attempt(() => toolShed.CheckIn(3), "Return tool not held by anyone - should fail");
 
             Console.WriteLine("Done.");
-
-
         }
 
-        static void Attempt(Action a)
+        static void Attempt(Action a, string experiment)
         {
             try
             {
@@ -45,7 +37,7 @@ namespace Nuri.MongoDB.Transactions
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Attempt Failed:  {e.Message}");
+                Console.WriteLine($"Failed '{experiment}':\n\t{e.Message}");
             }
 
         }

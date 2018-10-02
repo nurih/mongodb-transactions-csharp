@@ -19,7 +19,7 @@ namespace Nuri.MongoDB.Transactions
 
         public void CheckOut(int toolId, int personId)
         {
-            System.Console.WriteLine($"Check Out {toolId} to {personId}");
+            System.Console.WriteLine($"Check Out tool [{toolId}] to person [{personId}]");
          
             using (var session = client.StartSession())
             {
@@ -73,11 +73,10 @@ namespace Nuri.MongoDB.Transactions
 
         public void CheckIn(int toolId)
         {
-            System.Console.WriteLine($"Check In {toolId}");
-
+            System.Console.WriteLine($"Check In tool [{toolId}]");
+            
             using (var session = client.StartSession())
             {
-
                 session.StartTransaction(new TransactionOptions(
                       readConcern: ReadConcern.Snapshot,
                       writeConcern: WriteConcern.WMajority));
@@ -103,12 +102,11 @@ namespace Nuri.MongoDB.Transactions
 
                     int personId = heldTool.HeldBy.Value;
 
-                    lendLogCollection.UpdateOne(session,
-
+                    lendLogCollection.UpdateOne(
+                        session,
                         Builders<LendingLedger>.Filter.Eq(l => l.ToolId, toolId)
                             & Builders<LendingLedger>.Filter.Eq(l => l.PersonId, personId)
                             & Builders<LendingLedger>.Filter.Eq(l => l.CheckInTime, null),
-
                         Builders<LendingLedger>.Update.Set(l => l.CheckInTime, DateTime.UtcNow)
                         );
 
