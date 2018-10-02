@@ -16,7 +16,6 @@ The use cases are:
 
 Since the modeling has 3 separate entities tracking the lending operation, a transaction wraps the 2 major cases: checking in and checking out of a tool.
 
-
 ## Running the Example
 
 Transactions in MongoDB require a Replica Set. Make sure your Mongo server is running in Replica Set mode.
@@ -33,4 +32,10 @@ From the admin shell, you then need to initiate the replica set:
 
 ```bash
 mongo mongodb://localhost/ --eval "rs.initiate()"
+```
+
+When you have a local MongoDB instance running a replica set, you can build and run the example.
+
+```powershell
+dotnet run .\bin\Debug\netcoreapp2.1\mongodb-transactions-csharp.dll
 ```
