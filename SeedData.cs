@@ -31,18 +31,21 @@ namespace Nuri.MongoDB.Transactions
 
         private static void SeedTool(IMongoDatabase db)
         {
+            db.DropCollection(nameof(Tool));
             var toolCollection = db.GetCollection<Tool>(nameof(Tool));
-            toolCollection.ReplaceOne(d => d.Id == 1, new Tool { Id = 1, Name = "hammer" });
-            toolCollection.ReplaceOne(d => d.Id == 2, new Tool { Id = 2, Name = "saw" });
-            toolCollection.ReplaceOne(d => d.Id == 3, new Tool { Id = 3, Name = "drill" });
+
+            toolCollection.ReplaceOne(d => d.Id == 1, new Tool { Id = 1, Name = "hammer" }, new UpdateOptions() { IsUpsert = true });
+            toolCollection.ReplaceOne(d => d.Id == 2, new Tool { Id = 2, Name = "saw" }, new UpdateOptions() { IsUpsert = true });
+            toolCollection.ReplaceOne(d => d.Id == 3, new Tool { Id = 3, Name = "drill" }, new UpdateOptions() { IsUpsert = true });
         }
 
         private static void SeedPerson(IMongoDatabase db)
         {
+            db.DropCollection(nameof(Person));
             var personCollection = db.GetCollection<Person>(nameof(Person));
-            personCollection.ReplaceOne(d => d.Id == 1, new Person { Id = 1, Name = "bob" });
-            personCollection.ReplaceOne(d => d.Id == 2, new Person { Id = 2, Name = "ogg" });
-            personCollection.ReplaceOne(d => d.Id == 3, new Person { Id = 3, Name = "kim" });
+            personCollection.ReplaceOne(d => d.Id == 1, new Person { Id = 1, Name = "bob" }, new UpdateOptions() { IsUpsert = true });
+            personCollection.ReplaceOne(d => d.Id == 2, new Person { Id = 2, Name = "ogg" }, new UpdateOptions() { IsUpsert = true });
+            personCollection.ReplaceOne(d => d.Id == 3, new Person { Id = 3, Name = "kim" }, new UpdateOptions() { IsUpsert = true });
         }
     }
 }
