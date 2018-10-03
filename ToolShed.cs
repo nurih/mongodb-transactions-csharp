@@ -20,8 +20,8 @@ namespace Nuri.MongoDB.Transactions
         public void CheckOut(int toolId, int personId)
         {
             System.Console.WriteLine($"Check Out tool [{toolId}] to person [{personId}]");
-         
-            using (var session = client.StartSession())
+
+            using (var session = client.StartSession(new ClientSessionOptions { CausalConsistency = true }))
             {
 
                 session.StartTransaction(new TransactionOptions(
@@ -30,10 +30,9 @@ namespace Nuri.MongoDB.Transactions
 
                 try
                 {
-
                     var personCollection = db.GetCollection<Person>(nameof(Person));
                     var toolCollection = db.GetCollection<Tool>(nameof(Tool));
-                    var lendLogCollection = db.GetCollection<LendingLedger>(nameof(LendingLedger));
+                    var lendLedgerCollection = db.GetCollection<LendingLedger>(nameof(LendingLedger));
 
 
                     var holdTool = toolCollection.UpdateOne(session,
@@ -42,22 +41,26 @@ namespace Nuri.MongoDB.Transactions
 
                     if (holdTool.ModifiedCount != 1)
                     {
-                        throw new InvalidOperationException("Tool already held by somebody");
+                        throw new InvalidOperationException($"Failed updating hold on tool {toolId}. It might be held or non-existent");
                     }
 
-                    lendLogCollection.InsertOne(session, new LendingLedger
+                    lendLedgerCollection.InsertOne(session, new LendingLedger
                     {
                         ToolId = toolId,
                         PersonId = personId,
                         CheckOutTime = DateTime.UtcNow
                     });
 
-                    personCollection.UpdateOne(
-                        session,
-                        Builders<Person>.Filter.Eq(p => p.Id, personId),
-                        Builders<Person>.Update.Inc(p => p.ToolCount, 1)
-                        );
+                    var toolCount = personCollection.UpdateOne(
+                               session,
+                               Builders<Person>.Filter.Eq(p => p.Id, personId),
+                               Builders<Person>.Update.Inc(p => p.ToolCount, 1)
+                               );
 
+                    if (toolCount.ModifiedCount != 1)
+                    {
+                        throw new InvalidOperationException($"Failed increasing tool count on person {personId}");
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -74,7 +77,7 @@ namespace Nuri.MongoDB.Transactions
         public void CheckIn(int toolId)
         {
             System.Console.WriteLine($"Check In tool [{toolId}]");
-            
+
             using (var session = client.StartSession())
             {
                 session.StartTransaction(new TransactionOptions(
@@ -86,7 +89,7 @@ namespace Nuri.MongoDB.Transactions
 
                     var personCollection = db.GetCollection<Person>(nameof(Person));
                     var toolCollection = db.GetCollection<Tool>(nameof(Tool));
-                    var lendLogCollection = db.GetCollection<LendingLedger>(nameof(LendingLedger));
+                    var lendLedgerCollection = db.GetCollection<LendingLedger>(nameof(LendingLedger));
 
 
                     var heldTool = toolCollection.FindOneAndUpdate(session,
@@ -97,12 +100,12 @@ namespace Nuri.MongoDB.Transactions
 
                     if (heldTool == null)
                     {
-                        throw new InvalidOperationException("Tool not currently held");
+                        throw new InvalidOperationException($"Failed removing hold on tool {toolId}. It might be held or non-existent");
                     }
 
                     int personId = heldTool.HeldBy.Value;
 
-                    lendLogCollection.UpdateOne(
+                    var ledger = lendLedgerCollection.UpdateOne(
                         session,
                         Builders<LendingLedger>.Filter.Eq(l => l.ToolId, toolId)
                             & Builders<LendingLedger>.Filter.Eq(l => l.PersonId, personId)
@@ -110,11 +113,22 @@ namespace Nuri.MongoDB.Transactions
                         Builders<LendingLedger>.Update.Set(l => l.CheckInTime, DateTime.UtcNow)
                         );
 
-                    personCollection.UpdateOne(
+                    if (ledger.ModifiedCount != 1)
+                    {
+                        throw new InvalidOperationException($@"Failed updating ledger for tool {toolId} by person {personId}. 
+                        It might already be returned, or otherwise not previously properly lent out.");
+                    }
+
+                    var toolCount = personCollection.UpdateOne(
                         session,
                         Builders<Person>.Filter.Eq(p => p.Id, personId),
                         Builders<Person>.Update.Inc(p => p.ToolCount, -1)
                         );
+
+                    if (toolCount.ModifiedCount != 1)
+                    {
+                        throw new InvalidOperationException($"Failed reducing tool count on person {personId}");
+                    }
 
                 }
                 catch (Exception exception)
