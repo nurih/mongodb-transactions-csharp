@@ -19,12 +19,16 @@ namespace Nuri.MongoDB.Transactions
             Attempt(() => toolShed.CheckIn(1), "Return tool held by someone");
 
             Attempt(() => toolShed.CheckOut(2, 3), "Lend un-held tool to a person");
- 
+
             Attempt(() => toolShed.CheckOut(2, 3), "Lend same tool to same person");
 
             Attempt(() => toolShed.CheckOut(2, 1), "Lend same tool to someone else - should fail");
 
             Attempt(() => toolShed.CheckIn(3), "Return tool not held by anyone - should fail");
+
+            Attempt(() => toolShed.CheckOut(3, 999), "Lend tool to non-existent person");
+
+            Attempt(() => toolShed.CheckOut(999, 1), "Lend non-existent tool to person");
 
             Console.WriteLine("Done.");
         }
