@@ -44,6 +44,9 @@ namespace Nuri.MongoDB.Transactions
                 catch (MongoException exception)
                 {
                     // can retry commit
+                    // Driver already attempts a retry ONCE if there's a network class error.
+
+                    // In face of "write concern timeout" exception, driver retries once, but you may see "UnknownTransactionCommitResult" if that failed.
                     if (exception.HasErrorLabel("UnknownTransactionCommitResult"))
                     {
                         Console.WriteLine("UnknownTransactionCommitResult, retrying commit operation");
