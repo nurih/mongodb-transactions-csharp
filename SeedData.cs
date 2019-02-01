@@ -23,7 +23,6 @@ namespace Nuri.MongoDB.Transactions
         private static void SeedLendingLedger(IMongoDatabase db)
         {
             var lendingCollection = db.GetCollection<LendingLedger>(nameof(LendingLedger));
-            //if(db.ListCollectionNames().ToList().Any(c=> c == nameof(LendingLedger))){
             db.DropCollection(nameof(LendingLedger));
             db.CreateCollection(nameof(LendingLedger));
 

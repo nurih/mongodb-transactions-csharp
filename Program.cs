@@ -33,17 +33,26 @@ namespace Nuri.MongoDB.Transactions
             Console.WriteLine("Done.");
         }
 
-        static void Attempt(Action a, string experiment)
+
+        static void Attempt(Action action, string experiment)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(experiment);
+            Console.WriteLine("======================");
+            Console.ReadKey();
             try
             {
-                a();
+
+                action();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed '{experiment}':\n\t{e.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\t *** Failed!:\n\t{e.Message}");
             }
 
+            Console.ResetColor();
+            Console.WriteLine();
         }
     }
 }
