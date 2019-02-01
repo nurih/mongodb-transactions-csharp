@@ -10,7 +10,7 @@ namespace Nuri.MongoDB.Transactions
             Console.WriteLine("Hello MongoDB Transaction");
 
             var db = SeedData.Create("mongodb://localhost/");
-
+            var mu = new Multitude(db);
 
             var toolShed = new ToolShed(db);
 
@@ -39,7 +39,6 @@ namespace Nuri.MongoDB.Transactions
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(experiment);
             Console.WriteLine("======================");
-            Console.ReadKey();
             try
             {
 

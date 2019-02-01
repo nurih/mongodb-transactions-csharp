@@ -45,6 +45,7 @@ namespace Nuri.MongoDB.Transactions
             personCollection.ReplaceOne(d => d.Id == 1, new Person { Id = 1, Name = "bob" }, new UpdateOptions() { IsUpsert = true });
             personCollection.ReplaceOne(d => d.Id == 2, new Person { Id = 2, Name = "ogg" }, new UpdateOptions() { IsUpsert = true });
             personCollection.ReplaceOne(d => d.Id == 3, new Person { Id = 3, Name = "kim" }, new UpdateOptions() { IsUpsert = true });
+            personCollection.ReplaceOne(d => d.Id == 4, new Person { Id = 4, Name = "tig" }, new UpdateOptions() { IsUpsert = true });
         }
     }
 }
